@@ -249,14 +249,19 @@ function fetchAll(entity){
  function page(p){return ZOHO.CRM.API.getAllRecords({Entity:entity,sort_order:'asc',per_page:200,page:p}).then(function(r){var rows=(r&&r.data)||[];out=out.concat(rows);var more=r&&r.info&&r.info.more_records;return (more&&p<10)?page(p+1):out;});}
  return withTimeout(page(1),WD).catch(function(e){var m=errText(e);if(/NO_CONTENT|204|no content/i.test(m)){return out;}state.warn.push(entity);state.lastErr=m;return out;});
 }
+var ENT=[['Accounts','acct',nAcct],['Deals','deal',nDeal],['Cases','case',nCase],['Finance_Tickets','ticket',nTicket],['KYC_Documents','doc',nDoc],['POS_Terminals','term',nTerm],['Field_Activities','act',nAct]];
+var raw={},CK='gcc_raw_v1',paintPending=false;
+function rebuild(){var d={acct:[],deal:[],case:[],ticket:[],doc:[],term:[],act:[]};ENT.forEach(function(e){d[e[1]]=(raw[e[0]]||[]).map(e[2]);});enrich(d);}
+function paint(){if(paintPending)return;paintPending=true;setTimeout(function(){paintPending=false;rebuild();state.mode='live';syncFilters();render();},0);}
+function saveCache(){try{localStorage.setItem(CK,JSON.stringify({t:Date.now(),raw:raw}));}catch(e){}}
+function loadCache(){try{var c=JSON.parse(localStorage.getItem(CK)||'null');if(c&&c.raw&&c.t&&Date.now()-c.t<864e5){raw=c.raw;return c.t;}}catch(e){}return 0;}
 function loadLive(){
  state.warn=[];state.lastErr='';
- var E=['Accounts','Deals','Cases','Finance_Tickets','KYC_Documents','POS_Terminals','Field_Activities'];
- return Promise.all(E.map(fetchAll)).then(function(r){
-  var total=r.reduce(function(s,x){return s+x.length;},0);
+ var t0=Date.now(),total=0;
+ return Promise.all(ENT.map(function(e){return fetchAll(e[0]).then(function(rows){raw[e[0]]=rows;total+=rows.length;if(rows.length)paint();return rows;});})).then(function(){
   if(!total){throw new Error('empty');}
-  enrich({acct:r[0].map(nAcct),deal:r[1].map(nDeal),case:r[2].map(nCase),ticket:r[3].map(nTicket),doc:r[4].map(nDoc),term:r[5].map(nTerm),act:r[6].map(nAct)});
-  state.mode='live';
+  state.cached=0;state.loadMs=Date.now()-t0;
+  rebuild();state.mode='live';saveCache();
  });
 }
 function useDemo(note){state.mode='demo';if(note)state.warn=[note+(state.lastErr?' ('+state.lastErr+')':'')];enrich(buildDemo());afterLoad();}
@@ -326,13 +331,13 @@ function render(){
  var mb=document.getElementById('modeBadge');
  mb.className='badge '+(state.mode==='live'?'live':'demo');
  mb.textContent=t(state.mode==='live'?'Live CRM data':'Demo data');
- document.getElementById('updated').textContent=t('Updated')+' '+now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+ document.getElementById('updated').textContent=t('Updated')+' '+(state.cached?new Date(state.cached):now).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})+(state.cached?' · cached':'')+(state.mode==='live'&&state.loadMs&&!state.cached?' · '+(state.loadMs/1000).toFixed(1)+'s':'');
  var chips='';var labels={country:'Country',sreg:'Saudi region',pipeline:'Pipeline',tier:'Merchant tier',owner:'Salesperson'};
  Object.keys(labels).forEach(function(k){if(state.filters[k])chips+='<span class="chip" data-clear="'+k+'">'+esc(t(labels[k]))+': '+esc(state.filters[k])+' ×</span>';});
  if(state.filters.period!=='all')chips+='<span class="chip" data-clear="period">'+esc(t('Period'))+' ×</span>';
  if(chips)chips+='<span class="chip" style="background:var(--muted)" data-reset="1">'+esc(t('Reset'))+'</span>';
  document.getElementById('chips').innerHTML=chips;
- document.getElementById('warn').innerHTML=state.warn.length?'<div class="warn">'+(state.mode==='demo'&&state.warn.length===1&&state.warn[0].indexOf(' ')>0?esc(state.warn[0]):'Could not read: '+esc(state.warn.join(', '))+' (check module API names and profile permissions).')+'</div>':'';
+ document.getElementById('warn').innerHTML=state.warn.length?'<div class="warn">'+(state.warn.length===1&&state.warn[0].indexOf(' ')>0?esc(state.warn[0]):'Could not read: '+esc(state.warn.join(', '))+' (check module API names and profile permissions).')+'</div>':'';
 
  /* KPIs */
  var active=A.filter(function(a){return a.status==='Active';}).length;
@@ -422,7 +427,7 @@ function render(){
 
  /* top merchants */
  var top=A.slice().sort(function(a,b){return b.mrr-a.mrr;}).slice(0,6);
- document.getElementById('pTop').innerHTML=top.length?top.map(function(a){return '<div class="li"><span class="av"><img src="logos/'+slug(a.name)+'.png" alt="" onerror="this.remove()"><b>'+esc(initials(a.name))+'</b></span><div class="m"><b>'+esc(a.name)+'</b><span>'+esc(a.sreg||a.country)+' · '+esc(a.status)+(a.owner?' · '+esc(a.owner):'')+'</span></div><span class="tag">'+esc(a.tier||'')+'</span><b>'+sar(a.mrr)+'</b></div>';}).join(''):empty();
+ document.getElementById('pTop').innerHTML=top.length?top.map(function(a){return '<div class="li"><span class="av"><img src="logos/'+slug(a.name)+'.png" alt="" loading="lazy" onerror="this.remove()"><b>'+esc(initials(a.name))+'</b></span><div class="m"><b>'+esc(a.name)+'</b><span>'+esc(a.sreg||a.country)+' · '+esc(a.status)+(a.owner?' · '+esc(a.owner):'')+'</span></div><span class="tag">'+esc(a.tier||'')+'</span><b>'+sar(a.mrr)+'</b></div>';}).join(''):empty();
 }
 
 /* ---------- language ---------- */
@@ -464,14 +469,15 @@ function boot(){
  applyLang();
  var forceDemo=q.get('demo')==='1';
  if(forceDemo||!inFrame||typeof ZOHO==='undefined'||!ZOHO.embeddedApp){useDemo();return;}
- setBadge('Loading…');
- document.getElementById('kpis').innerHTML='<div class="empty" style="grid-column:1/-1">Loading CRM data…</div>';
+ var ct=loadCache();
+ if(ct){state.cached=ct;rebuild();state.mode='live';syncFilters();render();}
+ else{setBadge('Loading…');document.getElementById('kpis').innerHTML='<div class="empty" style="grid-column:1/-1">Loading CRM data…</div>';}
  var started=false,finished=false;
- function done(){finished=true;}
- function go(){if(started)return;started=true;loadLive().then(function(){done();afterLoad();}).catch(function(){if(!finished){done();useDemo('Live CRM data did not load, showing demo data.');}});}
- try{ZOHO.embeddedApp.on('PageLoad',go);ZOHO.embeddedApp.init();}catch(err){state.lastErr=errText(err);useDemo('Could not start the Zoho SDK, showing demo data.');return;}
- setTimeout(go,1500);
- setTimeout(function(){if(!finished){finished=true;useDemo('Live CRM data did not respond, showing demo data.');}},WD+4000);
+ function fail(msg){if(finished)return;finished=true;if(state.cached){state.warn=['Showing the last saved data, the live refresh did not respond.'];render();}else{useDemo(msg);}}
+ function go(){if(started)return;started=true;loadLive().then(function(){finished=true;afterLoad();}).catch(function(){fail('Live CRM data did not load, showing demo data.');});}
+ try{ZOHO.embeddedApp.on('PageLoad',go);var ip=ZOHO.embeddedApp.init();if(ip&&typeof ip.then==='function'){ip.then(go,function(){});}}catch(err){state.lastErr=errText(err);fail('Could not start the Zoho SDK, showing demo data.');return;}
+ setTimeout(go,600);
+ setTimeout(function(){fail('Live CRM data did not respond, showing demo data.');},WD+4000);
  setInterval(function(){if(state.mode==='live'){loadLive().then(afterLoad).catch(function(){});}},300000);
 }
 window.addEventListener('load',boot);
