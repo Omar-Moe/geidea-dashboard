@@ -6,7 +6,9 @@
 <title>Merchant Command Center</title>
 <style>
 :root{--accent:#0b6e8a;--accent2:#e5a42b;--bg:#f3f5f8;--card:#ffffff;--ink:#14202b;--muted:#64748b;--line:#e3e8ef;--good:#16a34a;--warn:#d97706;--bad:#dc2626;--r:14px}
-@media (prefers-color-scheme:dark){:root{--bg:#0d131a;--card:#151e28;--ink:#e6edf3;--muted:#8b9bb0;--line:#243241}}
+:root[data-theme="dark"]{--bg:#0d131a;--card:#151e28;--ink:#e6edf3;--muted:#8b9bb0;--line:#243241}
+:root[data-theme="light"]{--bg:#f3f5f8;--card:#ffffff;--ink:#14202b;--muted:#64748b;--line:#e3e8ef}
+@media (prefers-color-scheme:dark){:root:not([data-theme]){--bg:#0d131a;--card:#151e28;--ink:#e6edf3;--muted:#8b9bb0;--line:#243241}}
 *{box-sizing:border-box}
 html,body{margin:0}
 body{font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Arabic",Tahoma,sans-serif;background:var(--bg);color:var(--ink)}
@@ -90,9 +92,10 @@ footer{margin-top:14px;color:var(--muted);font-size:11px;text-align:center}
   <header>
     <div>
       <h1 data-i18n="Merchant Command Center">Merchant Command Center</h1>
-      <div class="sub"><span id="modeBadge" class="badge">...</span> <span id="updated"></span></div>
+      <div class="sub"><span id="modeBadge" class="badge">Loading…</span> <span id="updated"></span></div>
     </div>
     <div class="hbtns">
+      <button id="btnTheme">Dark</button>
       <button id="btnLang">AR</button>
       <button id="btnRefresh" data-i18n="Refresh">Refresh</button>
     </div>
@@ -238,13 +241,16 @@ function buildDemo(){
 }
 
 /* ---------- live loading ---------- */
+var WD=window.__WD||9000;
+function withTimeout(p,ms){return new Promise(function(res,rej){var tm=setTimeout(function(){rej(new Error('no response from CRM within '+Math.round(ms/1000)+'s'));},ms);p.then(function(v){clearTimeout(tm);res(v);},function(e){clearTimeout(tm);rej(e);});});}
+function errText(e){if(!e)return 'unknown error';if(typeof e==='string')return e;if(e.message)return e.message;if(e.code)return String(e.code);try{return JSON.stringify(e).slice(0,120);}catch(x){return 'unknown error';}}
 function fetchAll(entity){
  var out=[];
  function page(p){return ZOHO.CRM.API.getAllRecords({Entity:entity,sort_order:'asc',per_page:200,page:p}).then(function(r){var rows=(r&&r.data)||[];out=out.concat(rows);var more=r&&r.info&&r.info.more_records;return (more&&p<10)?page(p+1):out;});}
- return page(1).catch(function(){state.warn.push(entity);return out;});
+ return withTimeout(page(1),WD).catch(function(e){var m=errText(e);if(/NO_CONTENT|204|no content/i.test(m)){return out;}state.warn.push(entity);state.lastErr=m;return out;});
 }
 function loadLive(){
- state.warn=[];
+ state.warn=[];state.lastErr='';
  var E=['Accounts','Deals','Cases','Finance_Tickets','KYC_Documents','POS_Terminals','Field_Activities'];
  return Promise.all(E.map(fetchAll)).then(function(r){
   var total=r.reduce(function(s,x){return s+x.length;},0);
@@ -253,7 +259,7 @@ function loadLive(){
   state.mode='live';
  });
 }
-function useDemo(note){state.mode='demo';if(note)state.warn=[note];enrich(buildDemo());afterLoad();}
+function useDemo(note){state.mode='demo';if(note)state.warn=[note+(state.lastErr?' ('+state.lastErr+')':'')];enrich(buildDemo());afterLoad();}
 function afterLoad(){syncFilters();render();}
 
 /* ---------- filtering ---------- */
@@ -439,20 +445,33 @@ document.addEventListener('click',function(e){
  var cur=state.filters[k];setFilter(k,cur===v?'':v);
 });
 document.getElementById('btnLang').addEventListener('click',function(){state.lang=state.lang==='ar'?'en':'ar';applyLang();});
-document.getElementById('btnRefresh').addEventListener('click',function(){if(state.mode==='live'){loadLive().then(afterLoad).catch(function(){});}else{afterLoad();}});
+document.getElementById('btnRefresh').addEventListener('click',function(){
+ var canLive=window.self!==window.top&&typeof ZOHO!=='undefined'&&ZOHO.CRM;
+ if(canLive){setBadge('Loading…');loadLive().then(afterLoad).catch(function(){useDemo('Live CRM data did not load, showing demo data.');});}else{afterLoad();}
+});
+document.getElementById('btnTheme').addEventListener('click',function(){var r=document.documentElement,cur=r.getAttribute('data-theme');if(!cur)cur=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';var nx=cur==='dark'?'light':'dark';r.setAttribute('data-theme',nx);this.textContent=nx==='dark'?'Light':'Dark';});
+function setBadge(x){var mb=document.getElementById('modeBadge');mb.className='badge';mb.textContent=x;}
 
 /* ---------- boot ---------- */
 function boot(){
  var q=new URLSearchParams(location.search);
+ var inFrame=window.self!==window.top;
+ var theme=q.get('theme')||(inFrame?'light':'');
+ if(theme==='light'||theme==='dark'){document.documentElement.setAttribute('data-theme',theme);}
+ var tb=document.getElementById('btnTheme');
+ tb.textContent=(document.documentElement.getAttribute('data-theme')==='dark')?'Light':'Dark';
  if(q.get('lang')==='ar'){state.lang='ar';}
  applyLang();
  var forceDemo=q.get('demo')==='1';
- var inFrame=window.self!==window.top;
  if(forceDemo||!inFrame||typeof ZOHO==='undefined'||!ZOHO.embeddedApp){useDemo();return;}
- var started=false;
- function go(){if(started)return;started=true;loadLive().then(afterLoad).catch(function(){useDemo('CRM returned no records or access was denied. Showing demo data.');});}
- try{ZOHO.embeddedApp.on('PageLoad',go);ZOHO.embeddedApp.init();}catch(err){useDemo('Could not start the Zoho SDK. Showing demo data.');return;}
- setTimeout(go,2500);
+ setBadge('Loading…');
+ document.getElementById('kpis').innerHTML='<div class="empty" style="grid-column:1/-1">Loading CRM data…</div>';
+ var started=false,finished=false;
+ function done(){finished=true;}
+ function go(){if(started)return;started=true;loadLive().then(function(){done();afterLoad();}).catch(function(){if(!finished){done();useDemo('Live CRM data did not load, showing demo data.');}});}
+ try{ZOHO.embeddedApp.on('PageLoad',go);ZOHO.embeddedApp.init();}catch(err){state.lastErr=errText(err);useDemo('Could not start the Zoho SDK, showing demo data.');return;}
+ setTimeout(go,1500);
+ setTimeout(function(){if(!finished){finished=true;useDemo('Live CRM data did not respond, showing demo data.');}},WD+4000);
  setInterval(function(){if(state.mode==='live'){loadLive().then(afterLoad).catch(function(){});}},300000);
 }
 window.addEventListener('load',boot);
