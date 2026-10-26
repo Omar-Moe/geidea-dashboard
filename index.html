@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Merchant Command Center</title>
+<title>Geidea | Merchant Command Center</title>
 <style>
-:root{--accent:#0b6e8a;--accent2:#e5a42b;--bg:#f3f5f8;--card:#ffffff;--ink:#14202b;--muted:#64748b;--line:#e3e8ef;--good:#16a34a;--warn:#d97706;--bad:#dc2626;--r:14px}
+:root{--navy:#0D2B4E;--accent:#E8590C;--accent2:#F2A33A;--bg:#f3f5f8;--card:#ffffff;--ink:#14202b;--muted:#64748b;--line:#e3e8ef;--good:#16a34a;--warn:#d97706;--bad:#dc2626;--r:14px}
 :root[data-theme="dark"]{--bg:#0d131a;--card:#151e28;--ink:#e6edf3;--muted:#8b9bb0;--line:#243241}
 :root[data-theme="light"]{--bg:#f3f5f8;--card:#ffffff;--ink:#14202b;--muted:#64748b;--line:#e3e8ef}
 @media (prefers-color-scheme:dark){:root:not([data-theme]){--bg:#0d131a;--card:#151e28;--ink:#e6edf3;--muted:#8b9bb0;--line:#243241}}
@@ -14,6 +14,16 @@ html,body{margin:0}
 body{font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Arabic",Tahoma,sans-serif;background:var(--bg);color:var(--ink)}
 #app{max-width:1500px;margin:0 auto;padding:16px}
 header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+header.brandbar{background:linear-gradient(100deg,var(--navy),#1B4476);color:#fff;border-radius:var(--r);padding:12px 16px;border-bottom:3px solid var(--accent)}
+header.brandbar h1{color:#fff}
+header.brandbar .sub{color:rgba(255,255,255,.78)}
+header.brandbar button{background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.35)}
+header.brandbar button:hover{background:rgba(255,255,255,.22);border-color:#fff}
+header.brandbar .badge{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.4);color:#fff}
+.hl{display:flex;align-items:center;gap:14px;min-width:0}
+.brandlogo{display:flex;align-items:center;justify-content:center;height:46px;min-width:96px;background:#fff;border-radius:10px;padding:6px 12px;flex:none}
+.brandlogo img{max-height:32px;max-width:150px;display:block}
+.brandlogo .wm{display:none;font-size:20px;font-weight:800;letter-spacing:.01em;color:var(--navy)}
 h1{font-size:20px;margin:0}
 .sub{color:var(--muted);font-size:12px}
 .hbtns{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
@@ -82,17 +92,36 @@ tr.click{cursor:pointer}tr.click:hover td{background:var(--bg)}
 .av{position:relative;width:34px;height:34px;border-radius:9px;overflow:hidden;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:700;font-size:12px;flex:none}
 .av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#fff}
 .ks,.bv,.li .m span,.funnel .fb,.tile b,.tag{unicode-bidi:plaintext}
-footer{margin-top:14px;color:var(--muted);font-size:11px;text-align:center}
+footer{display:none}
+.warn{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.warn .x{border:0;background:transparent;font-size:18px;line-height:1;padding:0 4px;cursor:pointer;color:var(--muted)}
+.gauges{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.gauge{text-align:center;border:1px solid var(--line);border-radius:12px;padding:8px 6px;background:var(--bg)}
+.gauge svg{width:100%;max-width:150px;height:auto}
+.gauge .gv{font-size:20px;font-weight:700;margin-top:-20px}
+.gauge .gl{font-size:11px;color:var(--muted)}
+.mapsvg{width:100%;height:auto;display:block;background:var(--bg);border-radius:12px}
+.land{fill:var(--card);stroke:var(--muted);stroke-width:1.2}
+.mapsvg [data-f]{cursor:pointer}
+.mlabel{font-size:9px;fill:var(--muted)}
+.hm td.c{text-align:center;font-variant-numeric:tabular-nums;border:2px solid var(--card);min-width:44px}
+.hm th{font-size:10px;line-height:1.2}
+.legend.row{flex-direction:row;flex-wrap:wrap;gap:10px;margin-top:8px}
+.note{font-size:11px;color:var(--muted);margin-top:6px}
+footer_unused{margin-top:14px;color:var(--muted);font-size:11px;text-align:center}
 .ministack{display:flex;height:10px;border-radius:6px;overflow:hidden;background:var(--bg)}
 .ministack i{display:block;height:100%}
 </style>
 </head>
 <body>
 <div id="app">
-  <header>
-    <div>
-      <h1 data-i18n="Merchant Command Center">Merchant Command Center</h1>
-      <div class="sub"><span id="modeBadge" class="badge">Loading…</span> <span id="updated"></span></div>
+  <header class="brandbar">
+    <div class="hl">
+      <span class="brandlogo" id="brand"><img id="brandImg" src="assets/geidea-logo.svg" alt="Geidea" onerror="window.brandFallback&&window.brandFallback(this)"><b class="wm">Geidea</b></span>
+      <div>
+        <h1 data-i18n="Merchant Command Center">Merchant Command Center</h1>
+        <div class="sub"><span id="modeBadge" class="badge">Loading…</span> <span id="updated"></span></div>
+      </div>
     </div>
     <div class="hbtns">
       <button id="btnTheme">Dark</button>
@@ -108,6 +137,15 @@ footer{margin-top:14px;color:var(--muted);font-size:11px;text-align:center}
   <section class="kpis" id="kpis"></section>
 
   <section class="grid">
+    <div class="p s7">
+      <h2><span data-i18n="Merchant and visit map">Merchant and visit map</span><span class="seg" id="layerSeg"></span></h2>
+      <div id="pGeo"></div>
+    </div>
+    <div class="p s5">
+      <h2><span data-i18n="Targets">Targets</span></h2>
+      <div class="gauges" id="pGauges"></div>
+    </div>
+
     <div class="p s5">
       <h2><span data-i18n="Saudi regions map">Saudi regions map</span>
         <span class="seg" id="metricSeg"></span></h2>
@@ -132,6 +170,15 @@ footer{margin-top:14px;color:var(--muted);font-size:11px;text-align:center}
     </div>
 
     <div class="p s6">
+      <h2><span data-i18n="New merchants by month">New merchants by month</span></h2>
+      <div id="pMonths"></div>
+    </div>
+    <div class="p s6">
+      <h2><span data-i18n="Pipelines">Pipelines</span></h2>
+      <div id="pPipes"></div>
+    </div>
+
+    <div class="p s6">
       <h2><span data-i18n="Field activities">Field activities</span></h2>
       <div id="pActs"></div>
     </div>
@@ -141,8 +188,8 @@ footer{margin-top:14px;color:var(--muted);font-size:11px;text-align:center}
     </div>
 
     <div class="p s7">
-      <h2><span data-i18n="Salesperson leaderboard">Salesperson leaderboard</span></h2>
-      <div id="pBoard"></div>
+      <h2><span data-i18n="Visits by zone and type">Visits by zone and type</span></h2>
+      <div id="pHeat"></div>
     </div>
     <div class="p s5">
       <h2><span data-i18n="Upcoming visits">Upcoming visits</span></h2>
@@ -150,11 +197,14 @@ footer{margin-top:14px;color:var(--muted);font-size:11px;text-align:center}
     </div>
 
     <div class="p s12">
+      <h2><span data-i18n="Salesperson leaderboard">Salesperson leaderboard</span></h2>
+      <div id="pBoard"></div>
+    </div>
+    <div class="p s12">
       <h2><span data-i18n="Top merchants">Top merchants</span></h2>
       <div id="pTop"></div>
     </div>
   </section>
-  <footer><span data-i18n="Click any bar, tile, legend item or salesperson to filter. Data refreshes every 5 minutes.">Click any bar, tile, legend item or salesperson to filter. Data refreshes every 5 minutes.</span></footer>
 </div>
 
 <script src="https://live.zwidgets.com/js-sdk/1.2/ZohoEmbededAppSDK.min.js" onerror="var s=document.createElement('script');s.src='ZohoEmbededAppSDK.min.js';document.head.appendChild(s);"></script>
@@ -168,8 +218,12 @@ var TILE={'Tabuk':[0,0],'Al Jawf':[1,0],'Northern Borders':[2,0],'Madinah':[0,1]
 var STAGE_ORDER=['Qualification','Needs Analysis','Value Proposition','Id. Decision Makers','Identify Decision Makers','Proposal/Price Quote','Negotiation/Review','Closed Won','Closed Lost','Closed Lost to Competition'];
 var TIERS=['Enterprise','SME','Micro'];
 var KYC_ORDER=['Verified','Received','Pending','Rejected','Expired'];
-var KYC_COLOR={'Verified':'#16a34a','Received':'#0b6e8a','Pending':'#94a3b8','Rejected':'#dc2626','Expired':'#d97706'};
-var TIER_COLOR={'Enterprise':'#0b6e8a','SME':'#e5a42b','Micro':'#7c3aed'};
+var KYC_COLOR={'Verified':'#16a34a','Received':'#2F5D9A','Pending':'#94a3b8','Rejected':'#dc2626','Expired':'#d97706'};
+var TIER_COLOR={'Enterprise':'#2F5D9A','SME':'#E8590C','Micro':'#8A9BB5'};
+var CITY={'riyadh':[24.7136,46.6753],'jeddah':[21.5433,39.1728],'makkah':[21.3891,39.8579],'madinah':[24.4686,39.6142],'al khobar':[26.2172,50.1971],'khobar':[26.2172,50.1971],'dammam':[26.4207,50.0888],'buraydah':[26.3292,43.9751],'abha':[18.2164,42.5053],'tabuk':[28.3835,36.5662],'hail':[27.5114,41.7208],'jazan':[16.889,42.5511],'najran':[17.4917,44.1277],'al bahah':[20.0129,41.4677],'sakaka':[29.9697,40.2064],'arar':[30.9753,41.0381],'taif':[21.2703,40.4158],'unaizah':[26.0842,43.9945],'ar rass':[25.8694,43.4973],'yanbu':[24.0889,38.0617],'jubail':[27.0046,49.646]};
+var REGC={'Riyadh':[24.7,46.7],'Makkah':[21.4,39.8],'Madinah':[24.5,39.6],'Eastern Province':[26.4,50.1],'Qassim':[26.3,43.97],'Asir':[18.2,42.5],'Tabuk':[28.4,36.6],'Hail':[27.5,41.7],'Jazan':[16.9,42.55],'Najran':[17.5,44.1],'Al Bahah':[20.0,41.5],'Al Jawf':[29.97,40.2],'Northern Borders':[30.98,41.04]};
+var KSA_PTS=[[34.95,29.35],[36.07,29.19],[37.5,29.99],[37.0,31.5],[38.8,31.95],[39.2,32.15],[40.0,31.8],[41.6,31.1],[43.5,29.9],[44.7,29.2],[46.55,29.1],[47.5,28.65],[48.45,28.5],[48.6,27.8],[49.3,27.2],[49.65,27.0],[50.1,26.4],[50.2,26.0],[50.6,25.3],[50.85,24.7],[51.6,24.25],[52.0,23.0],[55.2,22.7],[55.65,22.0],[55.0,20.0],[52.0,19.0],[49.0,18.6],[47.0,17.4],[44.5,17.4],[43.3,17.3],[42.8,16.5],[42.65,16.4],[42.6,17.3],[41.4,19.0],[40.2,20.2],[39.2,21.5],[38.7,22.6],[38.1,24.1],[37.0,25.3],[36.0,26.5],[35.2,27.8]];
+var LAYERS={merch:true,outlet:true,act:true};
 var COUNTRY_MAP={'Saudi Arabia':'KSA','United Arab Emirates':'UAE','Egypt':'EGY'};
 
 var I18N={ar:{
@@ -179,6 +233,7 @@ var I18N={ar:{
  'Saudi regions map':'خريطة مناطق المملكة','Recurring revenue by region':'الإيراد حسب المنطقة','Sales funnel':'قمع المبيعات','Merchants by tier':'التجار حسب الفئة','KYC document status':'حالة وثائق KYC','Field activities':'الأنشطة الميدانية','Field service by visit type':'الصيانة الميدانية حسب النوع','Salesperson leaderboard':'لوحة مندوبي المبيعات','Upcoming visits':'الزيارات القادمة','Top merchants':'أفضل التجار',
  'MRR':'الإيراد','Merchants ':'التجار','Visits':'الزيارات','No data for these filters':'لا توجد بيانات لهذه الفلاتر',
  'Click any bar, tile, legend item or salesperson to filter. Data refreshes every 5 minutes.':'انقر على أي شريط أو مربع أو عنصر أو مندوب للتصفية. تتحدث البيانات كل 5 دقائق.',
+ 'Merchant and visit map':'خريطة التجار والزيارات','Targets':'المؤشرات مقابل المستهدف','New merchants by month':'التجار الجدد حسب الشهر','Pipelines':'المسارات','Visits by zone and type':'الزيارات حسب المنطقة والنوع','KYC verified':'وثائق KYC الموثقة','Terminal availability':'جاهزية الأجهزة','Outlets':'الفروع',
  'Live CRM data':'بيانات مباشرة من النظام','Demo data':'بيانات تجريبية','Updated':'آخر تحديث'
 }};
 
@@ -206,17 +261,18 @@ function isLost(s){return /^Closed Lost/.test(s||'');}
 
 /* ---------- normalisers (live CRM) ---------- */
 function nAcct(r){var c=r.Merchant_Region||COUNTRY_MAP[r.Billing_Country]||'';
- return {kind:'acct',id:String(r.id),acct:String(r.id),name:r.Account_Name||'',country:c,sreg:r.Saudi_Region||'',tier:r.Merchant_Tier||'',status:r.Merchant_Status||'',mrr:num(r.MRR),vol:num(r.Transaction_Volume),kyc:r.KYC_Status||'',terminals:num(r.Terminal_Count),owner:uname(r.Owner),date:null};}
+ return {kind:'acct',id:String(r.id),acct:String(r.id),name:r.Account_Name||'',country:c,sreg:r.Saudi_Region||'',tier:r.Merchant_Tier||'',status:r.Merchant_Status||'',mrr:num(r.MRR),vol:num(r.Transaction_Volume),kyc:r.KYC_Status||'',terminals:num(r.Terminal_Count),owner:uname(r.Owner),date:null,city:r.Billing_City||'',activated:dt(r.Activation_Date)};}
 function nDeal(r){return {kind:'deal',id:String(r.id),name:r.Deal_Name||'',amount:num(r.Amount),stage:r.Stage||'',pipeline:r.Pipeline||'',country:r.Deal_Region||'',acct:lid(r.Account_Name),date:dt(r.Closing_Date),owner:uname(r.Owner)};}
 function nCase(r){return {kind:'case',id:String(r.id),name:r.Subject||'',type:r.Visit_Type||'Other',status:r.Status||'',country:r.Visit_Region||'',date:dt(r.Scheduled_Visit),acct:lid(r.Account_Name),owner:uname(r.Owner)};}
 function nTicket(r){return {kind:'ticket',id:String(r.id),name:r.Name||'',pop:r.POP_Status||'',amount:num(r.Payment_Amount),country:r.Region||'',acct:lid(r.Merchant),date:dt(r.Due_Date),owner:uname(r.Owner)};}
 function nDoc(r){return {kind:'doc',id:String(r.id),name:r.Name||'',status:r.Document_Status||'',acct:lid(r.Merchant),owner:uname(r.Owner),date:null};}
 function nTerm(r){return {kind:'term',id:String(r.id),name:r.Name||'',status:r.Terminal_Status||'',acct:lid(r.Merchant),owner:uname(r.Owner),date:null};}
-function nAct(r){return {kind:'act',id:String(r.id),name:r.Name||'',type:r.Activity_Type||'Other',status:r.Activity_Status||'',outcome:r.Outcome||'',country:r.Country||'',sreg:r.Saudi_Region||'',zone:r.Sales_Zone||'',date:dt(r.Visit_Date),acct:lid(r.Merchant),docs:!!r.Documents_Collected,owner:uname(r.Owner)};}
+function nAct(r){return {kind:'act',id:String(r.id),name:r.Name||'',type:r.Activity_Type||'Other',status:r.Activity_Status||'',outcome:r.Outcome||'',country:r.Country||'',sreg:r.Saudi_Region||'',zone:r.Sales_Zone||'',date:dt(r.Visit_Date),acct:lid(r.Merchant),docs:!!r.Documents_Collected,owner:uname(r.Owner),lat:num(r.Latitude)||null,lng:num(r.Longitude)||null};}
+function nOutlet(r){return {kind:'outlet',id:String(r.id),name:r.Name||'',city:r.City||'',sreg:r.Saudi_Region||'',status:r.Outlet_Status||'',acct:lid(r.Merchant),owner:uname(r.Owner),date:null};}
 
 function enrich(d){
  var am={};d.acct.forEach(function(a){am[a.id]=a;});
- ['deal','case','ticket','doc','term','act'].forEach(function(k){d[k].forEach(function(e){var a=am[e.acct];if(!a)return;e.country=e.country||a.country;e.sreg=e.sreg||a.sreg;e.tier=a.tier;e.owner=e.owner||a.owner;e.acctName=a.name;});});
+ ['deal','case','ticket','doc','term','act','outlet'].forEach(function(k){d[k].forEach(function(e){var a=am[e.acct];if(!a)return;e.city=e.city||a.city||'';e.country=e.country||a.country;e.sreg=e.sreg||a.sreg;e.tier=a.tier;e.owner=e.owner||a.owner;e.acctName=a.name;});});
  d.acct.forEach(function(a){a.acctName=a.name;});
  var pa={};d.deal.forEach(function(x){if(!x.pipeline)return;(pa[x.pipeline]=pa[x.pipeline]||{})[x.acct]=1;});
  state.pipeAcc=pa;state.data=d;
@@ -226,8 +282,10 @@ function enrich(d){
 function buildDemo(){
  var own=['Saad Al-Otaibi','Noura Al-Shehri','Fahad Al-Zahrani','Reem Al-Qahtani'];
  var A=[['a1','Najd Dates & Sweets (Demo)','KSA','Riyadh','SME','Active',1450,310000,'Approved',2,0],['a2','Hijaz Perfumes (Demo)','KSA','Makkah','SME','Active',2100,540000,'Approved',3,1],['a3','Khobar Seafood Grill (Demo)','KSA','Eastern Province','SME','Active',2750,890000,'Approved',4,2],['a4','Madinah Pilgrim Hotel (Demo)','KSA','Madinah','Enterprise','Active',6800,2100000,'Approved',6,1],['a5','Qassim Fresh Market (Demo)','KSA','Qassim','Enterprise','Active',8400,3450000,'Approved',9,3],['a6','Asir Mountain Cafe (Demo)','KSA','Asir','Micro','Active',790,118000,'Approved',1,3],['a7','Tabuk Auto Care (Demo)','KSA','Tabuk','SME','Active',1100,205000,'Approved',2,0],['a8','Riyadh Smart Pharmacies (Demo)','KSA','Riyadh','Enterprise','Active',9600,4200000,'Approved',12,0],['a9','Jazan Fish Market Co. (Demo)','KSA','Jazan','SME','Onboarding',0,0,'Submitted to KYC',0,2],['a10','Dammam E-Store (Demo)','KSA','Eastern Province','SME','Prospect',0,0,'Documents Pending',0,2],['a11','Taif Rose Farms (Demo)','KSA','Makkah','Micro','Prospect',0,0,'Not Started',0,1],['a12','Hail Wellness Clinic (Demo)','KSA','Hail','SME','Active',1300,260000,'Approved',2,3],['a13','Al Noor Pharmacy (Demo)','KSA','Makkah','SME','Active',1850,420000,'Approved',1,1],['a14','Red Sea Coffee Roasters (Demo)','KSA','Riyadh','SME','Active',2400,780000,'Approved',1,0],['a15','Desert Dunes Resort (Demo)','UAE','','Enterprise','Active',5200,1650000,'Approved',0,2],['a16','Nile Fashion House (Demo)','EGY','','SME','Onboarding',0,0,'Submitted to KYC',0,3],['a17','Gulf Gadgets Online (Demo)','UAE','','SME','Prospect',0,0,'Documents Pending',0,2]];
- var d={acct:[],deal:[],case:[],ticket:[],doc:[],term:[],act:[]};
- A.forEach(function(r){d.acct.push({kind:'acct',id:r[0],acct:r[0],name:r[1],country:r[2],sreg:r[3],tier:r[4],status:r[5],mrr:r[6],vol:r[7],kyc:r[8],terminals:r[9],owner:own[r[10]],date:null});});
+ var d={acct:[],deal:[],case:[],ticket:[],doc:[],term:[],act:[],outlet:[]};
+ var CITYOF={a1:'Riyadh',a2:'Jeddah',a3:'Al Khobar',a4:'Madinah',a5:'Buraydah',a6:'Abha',a7:'Tabuk',a8:'Riyadh',a9:'Jazan',a10:'Dammam',a11:'Taif',a12:'Hail',a13:'Jeddah',a14:'Riyadh'};
+ var ACTD={a1:'2026-02-10',a2:'2026-04-18',a3:'2026-05-25',a4:'2026-01-12',a5:'2026-03-03',a6:'2026-06-14',a7:'2026-07-01',a8:'2026-02-28',a12:'2026-08-09',a13:'2026-03-15',a14:'2026-05-02',a15:'2026-01-20'};
+ A.forEach(function(r){d.acct.push({kind:'acct',id:r[0],acct:r[0],name:r[1],country:r[2],sreg:r[3],tier:r[4],status:r[5],mrr:r[6],vol:r[7],kyc:r[8],terminals:r[9],owner:own[r[10]],date:null,city:CITYOF[r[0]]||'',activated:dt(ACTD[r[0]]||null)});});
  function ow(id){for(var i=0;i<A.length;i++)if(A[i][0]===id)return own[A[i][10]];return own[0];}
  var D=[['Madinah Pilgrim Hotel - Enterprise Hospitality',81600,'Closed Won','KSA Enterprise','a4','2026-01-08'],['Qassim Fresh Market - Retail Rollout',100800,'Closed Won','KSA Enterprise','a5','2026-02-27'],['Riyadh Smart Pharmacies - Healthcare',115200,'Closed Won','KSA Enterprise','a8','2026-02-24'],['Qassim Fresh - Ar Rass Expansion',14400,'Proposal/Price Quote','KSA Enterprise','a5','2026-11-05'],['Riyadh Smart Pharmacies - VAS Renewal',28800,'Negotiation/Review','KSA Enterprise','a8','2026-11-30'],['Najd Dates - POS Standard',17400,'Closed Won','KSA SME and Micro','a1','2026-02-08'],['Hijaz Perfumes - POS Plus + Gateway',25200,'Closed Won','KSA SME and Micro','a2','2026-04-15'],['Khobar Seafood Grill - POS Plus',33000,'Closed Won','KSA SME and Micro','a3','2026-05-20'],['Jazan Fish Market - POS Standard',15600,'Negotiation/Review','KSA SME and Micro','a9','2026-10-28'],['Al Noor Pharmacy - POS Standard',22200,'Closed Won','KSA SME and Micro','a13','2026-03-10'],['Red Sea Coffee - POS Plus',28800,'Closed Won','KSA SME and Micro','a14','2026-04-28'],['Hail Wellness Clinic - POS',15600,'Closed Won','KSA SME and Micro','a12','2026-08-05'],['Tabuk Auto Care - Second Terminal',2200,'Closed Lost','KSA SME and Micro','a7','2026-10-19'],['Taif Rose Farms - Seasonal POS',9000,'Needs Analysis','Standard (Standard)','a11','2026-12-15'],['Dammam E-Store - Payment Gateway',11400,'Value Proposition','Standard (Standard)','a10','2026-11-20'],['Gulf Gadgets Online - PGW',9600,'Qualification','Standard (Standard)','a17','2026-11-30'],['Nile Fashion House - GPOS Starter',14400,'Negotiation/Review','Standard (Standard)','a16','2026-10-30']];
  var AM={};A.forEach(function(r){AM[r[0]]=r;});
@@ -237,6 +295,8 @@ function buildDemo(){
  [['Verified','a1'],['Verified','a1'],['Verified','a2'],['Expired','a2'],['Verified','a4'],['Verified','a4'],['Verified','a5'],['Received','a5'],['Received','a9'],['Verified','a9'],['Verified','a9'],['Rejected','a9'],['Pending','a9'],['Pending','a10'],['Received','a16']].forEach(function(r,i){d.doc.push({kind:'doc',id:'k'+i,name:'Doc',status:r[0],acct:r[1],owner:ow(r[1]),date:null});});
  var n=0;A.forEach(function(r){for(var i=0;i<r[9];i++){var st='Installed';if(r[0]==='a2'&&i===1)st='Under Repair';if(r[0]==='a5'&&i===0)st='Pending Installation';d.term.push({kind:'term',id:'m'+(n++),name:'TID',status:st,acct:r[0],owner:ow(r[0]),date:null});}});
  [['KYC Document Collection','Completed','Documents Collected','Jazan','Southern','a9','2026-10-06',true],['Product Demo','Completed','Interested','Qassim','Central','a5','2026-10-07',false],['Agreement Signing','Completed','Agreement Signed','Jazan','Southern','a9','2026-10-08',true],['Lead Prospecting','Completed','Interested','Makkah','Western','a11','2026-10-09',false],['Relationship Follow-up','Completed','Needs Follow-up','Riyadh','Central','a8','2026-10-12',false],['Installation Support','Completed','Needs Follow-up','Makkah','Western','a2','2026-10-13',false],['Relationship Follow-up','Completed','Interested','Eastern Province','Eastern','a3','2026-10-14',false],['Product Demo','Missed','Merchant Unavailable','Eastern Province','Eastern','a10','2026-10-15',false],['Relationship Follow-up','Completed','Interested','Madinah','Western','a4','2026-10-18',false],['Lead Prospecting','Completed','Not Interested','Tabuk','Northern','a7','2026-10-19',false],['Relationship Follow-up','Completed','Interested','Asir','Southern','a6','2026-10-20',false],['KYC Document Collection','Planned','','Jazan','Southern','a9','2026-10-24',false],['Installation Support','Planned','','Qassim','Central','a5','2026-10-25',false],['Product Demo','Planned','','Eastern Province','Eastern','a10','2026-10-27',false],['Agreement Signing','Planned','','Hail','Central','a12','2026-10-28',false],['Lead Prospecting','Completed','Interested','Riyadh','Central','a14','2026-10-10',false]].forEach(function(r,i){d.act.push({kind:'act',id:'v'+i,name:r[0]+' - '+AM[r[5]][1],type:r[0],status:r[1],outcome:r[2],country:'KSA',sreg:r[3],zone:r[4],date:dt(r[6]+'T10:00:00+03:00'),acct:r[5],docs:r[7],owner:ow(r[5])});});
+
+ [['Najd Dates - Olaya Branch','a1','Riyadh','Riyadh','Active'],['Hijaz Perfumes - Tahlia Boutique','a2','Jeddah','Makkah','Active'],['Hijaz Perfumes - Mall Kiosk','a2','Jeddah','Makkah','Active'],['Khobar Seafood Grill - Corniche','a3','Al Khobar','Eastern Province','Active'],['Madinah Pilgrim Hotel - Main','a4','Madinah','Madinah','Active'],['Qassim Fresh - Buraydah','a5','Buraydah','Qassim','Active'],['Qassim Fresh - Unaizah','a5','Unaizah','Qassim','Active'],['Qassim Fresh - Ar Rass','a5','Ar Rass','Qassim','Pending Installation'],['Asir Mountain Cafe','a6','Abha','Asir','Active'],['Tabuk Auto Care','a7','Tabuk','Tabuk','Active'],['Smart Pharmacy - Olaya','a8','Riyadh','Riyadh','Active'],['Smart Pharmacy - Al Malqa','a8','Riyadh','Riyadh','Active'],['Smart Pharmacy - Al Yasmin','a8','Riyadh','Riyadh','Active'],['Hail Wellness Clinic','a12','Hail','Hail','Active'],['Al Noor Pharmacy','a13','Jeddah','Makkah','Active'],['Red Sea Coffee - Olaya','a14','Riyadh','Riyadh','Active']].forEach(function(r,i){d.outlet.push({kind:'outlet',id:'o'+i,name:r[0],city:r[2],sreg:r[3],status:r[4],acct:r[1],owner:ow(r[1]),date:null});});
  return d;
 }
 
@@ -249,9 +309,9 @@ function fetchAll(entity){
  function page(p){return ZOHO.CRM.API.getAllRecords({Entity:entity,sort_order:'asc',per_page:200,page:p}).then(function(r){var rows=(r&&r.data)||[];out=out.concat(rows);var more=r&&r.info&&r.info.more_records;return (more&&p<10)?page(p+1):out;});}
  return withTimeout(page(1),WD).catch(function(e){var m=errText(e);if(/NO_CONTENT|204|no content/i.test(m)){return out;}state.warn.push(entity);state.lastErr=m;return out;});
 }
-var ENT=[['Accounts','acct',nAcct],['Deals','deal',nDeal],['Cases','case',nCase],['Finance_Tickets','ticket',nTicket],['KYC_Documents','doc',nDoc],['POS_Terminals','term',nTerm],['Field_Activities','act',nAct]];
+var ENT=[['Accounts','acct',nAcct],['Deals','deal',nDeal],['Cases','case',nCase],['Finance_Tickets','ticket',nTicket],['KYC_Documents','doc',nDoc],['POS_Terminals','term',nTerm],['Field_Activities','act',nAct],['Merchant_Outlets','outlet',nOutlet]];
 var raw={},CK='gcc_raw_v1',paintPending=false;
-function rebuild(){var d={acct:[],deal:[],case:[],ticket:[],doc:[],term:[],act:[]};ENT.forEach(function(e){d[e[1]]=(raw[e[0]]||[]).map(e[2]);});enrich(d);}
+function rebuild(){var d={acct:[],deal:[],case:[],ticket:[],doc:[],term:[],act:[],outlet:[]};ENT.forEach(function(e){d[e[1]]=(raw[e[0]]||[]).map(e[2]);});enrich(d);}
 function paint(){if(paintPending)return;paintPending=true;setTimeout(function(){paintPending=false;rebuild();state.mode='live';syncFilters();render();},0);}
 function saveCache(){try{localStorage.setItem(CK,JSON.stringify({t:Date.now(),raw:raw}));}catch(e){}}
 function loadCache(){try{var c=JSON.parse(localStorage.getItem(CK)||'null');if(c&&c.raw&&c.t&&Date.now()-c.t<864e5){raw=c.raw;return c.t;}}catch(e){}return 0;}
@@ -337,7 +397,9 @@ function render(){
  if(state.filters.period!=='all')chips+='<span class="chip" data-clear="period">'+esc(t('Period'))+' ×</span>';
  if(chips)chips+='<span class="chip" style="background:var(--muted)" data-reset="1">'+esc(t('Reset'))+'</span>';
  document.getElementById('chips').innerHTML=chips;
- document.getElementById('warn').innerHTML=state.warn.length?'<div class="warn">'+(state.warn.length===1&&state.warn[0].indexOf(' ')>0?esc(state.warn[0]):'Could not read: '+esc(state.warn.join(', '))+' (check module API names and profile permissions).')+'</div>':'';
+ var wtxt=state.warn.length?((state.warn.length===1&&state.warn[0].indexOf(' ')>0)?state.warn[0]:'Could not read: '+state.warn.join(', ')+' (check module API names and profile permissions).'):'';
+ state.warnText=wtxt;
+ document.getElementById('warn').innerHTML=(wtxt&&state.dismissed!==wtxt)?'<div class="warn"><span>'+esc(wtxt)+'</span><button class="x" data-dismiss="1" title="Dismiss">×</button></div>':'';
 
  /* KPIs */
  var active=A.filter(function(a){return a.status==='Active';}).length;
@@ -428,6 +490,84 @@ function render(){
  /* top merchants */
  var top=A.slice().sort(function(a,b){return b.mrr-a.mrr;}).slice(0,6);
  document.getElementById('pTop').innerHTML=top.length?top.map(function(a){return '<div class="li"><span class="av"><img src="logos/'+slug(a.name)+'.png" alt="" loading="lazy" onerror="this.remove()"><b>'+esc(initials(a.name))+'</b></span><div class="m"><b>'+esc(a.name)+'</b><span>'+esc(a.sreg||a.country)+' · '+esc(a.status)+(a.owner?' · '+esc(a.owner):'')+'</span></div><span class="tag">'+esc(a.tier||'')+'</span><b>'+sar(a.mrr)+'</b></div>';}).join(''):empty();
+ renderExtra(A,D,V,M,K,now);
+}
+
+/* ---------- geo + extra charts ---------- */
+function px(lon){return 15+(lon-34)*23.9;}
+function py(lat){return 15+(32.4-lat)*26;}
+function jit(id,k){var h=0,q=String(id);for(var i=0;i<q.length;i++)h=(h*31+q.charCodeAt(i))%1000;return ((h%100)/100-0.5)*k;}
+function geoOf(city,sreg,id){var c=CITY[String(city||'').toLowerCase().trim()];var base=c||REGC[sreg];if(!base)return null;var j=c?0.12:0.4;return [base[0]+jit(id,j),base[1]+jit(String(id)+'x',j)];}
+function renderGeo(A,O,V){
+ var ls=[['merch','Merchants'],['outlet','Outlets'],['act','Visits']];
+ document.getElementById('layerSeg').innerHTML=ls.map(function(l){return '<button data-layer="'+l[0]+'"'+(LAYERS[l[0]]?' class="on"':'')+'>'+esc(t(l[1]))+'</button>';}).join('');
+ var pts=KSA_PTS.map(function(p){return px(p[0]).toFixed(1)+','+py(p[1]).toFixed(1);}).join(' ');
+ var svg='<svg class="mapsvg" viewBox="0 0 560 462" role="img"><polygon class="land" points="'+pts+'"/>';
+ [['Riyadh',24.71,46.68],['Jeddah',21.54,39.17],['Dammam',26.42,50.09],['Madinah',24.47,39.61],['Abha',18.22,42.51],['Tabuk',28.38,36.57],['Hail',27.51,41.72]].forEach(function(c){svg+='<circle cx="'+px(c[2]).toFixed(1)+'" cy="'+py(c[1]).toFixed(1)+'" r="1.6" fill="var(--muted)"/><text class="mlabel" x="'+(px(c[2])+4).toFixed(1)+'" y="'+(py(c[1])-3).toFixed(1)+'">'+c[0]+'</text>';});
+ var outside=0,shownM=0,shownO=0,shownV=0;
+ if(LAYERS.merch)A.forEach(function(a){var g=geoOf(a.city,a.sreg,a.id);if(!g){outside++;return;}shownM++;var r=Math.max(5,Math.min(20,4+Math.sqrt(a.mrr)/6));var col=TIER_COLOR[a.tier]||'#94a3b8';var f=a.mrr>0?'fill="'+col+'" fill-opacity=".55"':'fill="none"';svg+='<circle cx="'+px(g[1]).toFixed(1)+'" cy="'+py(g[0]).toFixed(1)+'" r="'+r.toFixed(1)+'" '+f+' stroke="'+col+'" stroke-width="1.6"'+(a.sreg?' data-f="sreg" data-v="'+esc(a.sreg)+'"':'')+'><title>'+esc(a.name+' · '+(a.tier||'')+' · '+sar(a.mrr)+' MRR')+'</title></circle>';});
+ if(LAYERS.outlet)O.forEach(function(o){var g=geoOf(o.city,o.sreg,o.id);if(!g)return;shownO++;svg+='<circle cx="'+px(g[1]).toFixed(1)+'" cy="'+py(g[0]).toFixed(1)+'" r="2.8" fill="#64748b" opacity=".85"><title>'+esc(o.name+' · '+o.city)+'</title></circle>';});
+ if(LAYERS.act)V.forEach(function(v){var g=(v.lat&&v.lng)?[v.lat+jit(v.id,0.05),v.lng+jit(v.id+'y',0.05)]:geoOf(v.city,v.sreg,v.id);if(!g)return;shownV++;var x=px(g[1]),y=py(g[0]);var col=v.status==='Completed'?'#16a34a':(v.status==='Planned'?'#2F5D9A':'#dc2626');svg+='<path d="M'+x.toFixed(1)+' '+(y-5.5).toFixed(1)+' L'+(x+5.5).toFixed(1)+' '+y.toFixed(1)+' L'+x.toFixed(1)+' '+(y+5.5).toFixed(1)+' L'+(x-5.5).toFixed(1)+' '+y.toFixed(1)+' Z" fill="'+col+'" stroke="#fff" stroke-width="1"'+(v.sreg?' data-f="sreg" data-v="'+esc(v.sreg)+'"':'')+'><title>'+esc(v.name+' · '+v.status)+'</title></path>';});
+ svg+='</svg>';
+ var lg='<div class="legend row"><span><i class="sw" style="background:'+TIER_COLOR.Enterprise+'"></i> Enterprise</span><span><i class="sw" style="background:'+TIER_COLOR.SME+'"></i> SME</span><span><i class="sw" style="background:'+TIER_COLOR.Micro+'"></i> Micro</span><span><i class="sw" style="background:#64748b"></i> Outlet</span><span><i class="sw" style="background:#16a34a"></i> Visit done</span><span><i class="sw" style="background:#2F5D9A"></i> Visit planned</span><span><i class="sw" style="background:#dc2626"></i> Missed</span></div>';
+ var nt='<div class="note">Bubble size = MRR. Positions come from city coordinates, or exact GPS for field visits. Click a point to filter by its region.'+(outside?' '+outside+' merchant(s) outside KSA or without a city are not shown.':'')+'</div>';
+ document.getElementById('pGeo').innerHTML=(shownM+shownO+shownV)?svg+lg+nt:svg+'<div class="empty">'+esc(t('No data for these filters'))+'</div>';
+}
+function gauge(label,num,den,target){
+ var f=den?Math.max(0,Math.min(1,num/den)):0,L=125.66;
+ var col=!den?'var(--muted)':(f>=target?'var(--good)':(f>=target*0.8?'var(--warn)':'var(--bad)'));
+ var th=Math.PI*(1-target),x1=50+34*Math.cos(th),y1=50-34*Math.sin(th),x2=50+46*Math.cos(th),y2=50-46*Math.sin(th);
+ return '<div class="gauge"><svg viewBox="0 0 100 58"><path d="M10 50 A40 40 0 0 1 90 50" fill="none" stroke="var(--line)" stroke-width="9" stroke-linecap="round"/><path d="M10 50 A40 40 0 0 1 90 50" fill="none" stroke="'+col+'" stroke-width="9" stroke-linecap="round" stroke-dasharray="'+(f*L).toFixed(1)+' '+L+'"/><line x1="'+x1.toFixed(1)+'" y1="'+y1.toFixed(1)+'" x2="'+x2.toFixed(1)+'" y2="'+y2.toFixed(1)+'" stroke="var(--ink)" stroke-width="1.6"/></svg><div class="gv">'+(den?Math.round(f*100)+'%':'—')+'</div><div class="gl">'+esc(t(label))+'</div><div class="gl">target '+Math.round(target*100)+'%</div></div>';
+}
+function renderGauges(D,K,M,V){
+ var won=D.filter(function(x){return x.stage==='Closed Won';}).length;
+ var ver=K.filter(function(x){return x.status==='Verified';}).length;
+ var inst=M.filter(function(x){return x.status==='Installed';}).length;
+ var done=V.filter(function(x){return x.status==='Completed';}).length;
+ var den=V.filter(function(x){return x.status==='Completed'||x.status==='Missed'||x.status==='Cancelled';}).length;
+ document.getElementById('pGauges').innerHTML=gauge('Win rate',won,D.length,0.6)+gauge('Field completion',done,den,0.9)+gauge('KYC verified',ver,K.length,0.85)+gauge('Terminal availability',inst,M.length,0.95);
+}
+function renderMonths(A,now){
+ var el=document.getElementById('pMonths'),ms=[];
+ for(var i=11;i>=0;i--){var d0=new Date(now.getFullYear(),now.getMonth()-i,1);ms.push({y:d0.getFullYear(),m:d0.getMonth(),d:d0,n:0,mrr:0,cum:0});}
+ var base=0,first=new Date(ms[0].y,ms[0].m,1);
+ A.forEach(function(a){if(!a.activated)return;var idx=-1;for(var i=0;i<ms.length;i++){if(ms[i].y===a.activated.getFullYear()&&ms[i].m===a.activated.getMonth())idx=i;}if(idx>=0){ms[idx].n++;ms[idx].mrr+=a.mrr;}else if(a.activated<first){base+=a.mrr;}});
+ var run=base;ms.forEach(function(m){run+=m.mrr;m.cum=run;});
+ var maxN=Math.max.apply(null,ms.map(function(m){return m.n;}).concat([1])),maxC=Math.max.apply(null,ms.map(function(m){return m.cum;}).concat([1]));
+ if(!ms.some(function(m){return m.n;})&&!base){el.innerHTML=empty();return;}
+ var W=560,H=210,pl=10,pb=26,pt=22,bw=(W-2*pl)/12,ch=H-pb-pt;
+ var svg='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto">',line=[];
+ ms.forEach(function(m,i){var x=pl+i*bw,h=m.n/maxN*(ch*0.7),y=H-pb-h;
+  svg+='<rect x="'+(x+bw*0.2).toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+(bw*0.6).toFixed(1)+'" height="'+h.toFixed(1)+'" rx="4" fill="var(--accent)" opacity=".85"><title>'+m.n+' new merchant(s), '+sar(m.mrr)+' MRR</title></rect>';
+  if(m.n)svg+='<text x="'+(x+bw/2).toFixed(1)+'" y="'+(y-4).toFixed(1)+'" text-anchor="middle" font-size="10" fill="currentColor">'+m.n+'</text>';
+  svg+='<text x="'+(x+bw/2).toFixed(1)+'" y="'+(H-8)+'" text-anchor="middle" font-size="10" fill="#8b9bb0">'+m.d.toLocaleDateString('en-GB',{month:'short'})+'</text>';
+  line.push((x+bw/2).toFixed(1)+','+(H-pb-m.cum/maxC*ch).toFixed(1));});
+ svg+='<polyline points="'+line.join(' ')+'" fill="none" stroke="var(--accent2)" stroke-width="2.4"/>';
+ ms.forEach(function(m,i){var x=pl+i*bw+bw/2;svg+='<circle cx="'+x.toFixed(1)+'" cy="'+(H-pb-m.cum/maxC*ch).toFixed(1)+'" r="2.8" fill="var(--accent2)"><title>'+sar(m.cum)+' cumulative MRR</title></circle>';});
+ svg+='</svg><div class="legend row"><span><i class="sw" style="background:var(--accent)"></i> New merchants</span><span><i class="sw" style="background:var(--accent2)"></i> Cumulative MRR (peak '+sar(maxC)+')</span></div>';
+ el.innerHTML=svg;
+}
+function renderPipes(D){
+ var g=group(D,function(x){return x.pipeline||'No pipeline';});
+ var keys=Object.keys(g).sort(function(a,b){return sum(g[b],function(x){return x.amount;})-sum(g[a],function(x){return x.amount;});});
+ if(!keys.length){document.getElementById('pPipes').innerHTML=empty();return;}
+ var rows=keys.map(function(k){var L=g[k];return {k:k,won:sum(L.filter(function(x){return x.stage==='Closed Won';}),function(x){return x.amount;}),lost:sum(L.filter(function(x){return isLost(x.stage);}),function(x){return x.amount;}),open:sum(L.filter(function(x){return !isClosed(x.stage);}),function(x){return x.amount;}),n:L.length};});
+ var mx=Math.max.apply(null,rows.map(function(r){return r.won+r.lost+r.open;}).concat([1]));
+ document.getElementById('pPipes').innerHTML=rows.map(function(r){var tot=r.won+r.lost+r.open||1,w=(r.won+r.lost+r.open)/mx*100;return '<div class="bar click'+(state.filters.pipeline===r.k?' sel':'')+'" data-f="pipeline" data-v="'+esc(r.k)+'"><span class="bl" title="'+esc(r.k)+'">'+esc(r.k)+' ('+r.n+')</span><span class="ministack" style="width:'+w.toFixed(1)+'%;height:14px"><i title="Won" style="width:'+(r.won/tot*100)+'%;background:var(--good)"></i><i title="Open" style="width:'+(r.open/tot*100)+'%;background:var(--accent)"></i><i title="Lost" style="width:'+(r.lost/tot*100)+'%;background:var(--bad)"></i></span><span class="bv">'+sar(r.won+r.lost+r.open)+'</span></div>';}).join('')+'<div class="legend row"><span><i class="sw" style="background:var(--good)"></i> Won</span><span><i class="sw" style="background:var(--accent)"></i> Open</span><span><i class="sw" style="background:var(--bad)"></i> Lost</span></div>';
+}
+function renderHeat(V){
+ var ZO=['Central','Western','Eastern','Southern','Northern'];
+ var zones=uniq(V.map(function(v){return v.zone||v.sreg;})).sort(function(a,b){var ia=ZO.indexOf(a),ib=ZO.indexOf(b);return (ia<0?99:ia)-(ib<0?99:ib);});
+ var types=uniq(V.map(function(v){return v.type;}));
+ if(!V.length){document.getElementById('pHeat').innerHTML=empty();return;}
+ var cnts={},mx=1;
+ V.forEach(function(v){var z=v.zone||v.sreg,k=z+'|'+v.type;cnts[k]=(cnts[k]||0)+1;if(cnts[k]>mx)mx=cnts[k];});
+ var h='<div style="overflow:auto"><table class="hm"><tr><th></th>'+types.map(function(x){return '<th>'+esc(x)+'</th>';}).join('')+'<th>Total</th></tr>';
+ zones.forEach(function(z){var tot=0;h+='<tr><th style="text-align:start">'+esc(z)+'</th>';types.forEach(function(x){var c=cnts[z+'|'+x]||0;tot+=c;h+='<td class="c" style="background:'+(c?'rgba(232,89,12,'+(0.15+0.75*c/mx).toFixed(2)+')':'transparent')+'">'+(c||'')+'</td>';});h+='<td class="c"><b>'+tot+'</b></td></tr>';});
+ document.getElementById('pHeat').innerHTML=h+'</table></div>';
+}
+function renderExtra(A,D,V,M,K,now){
+ renderGeo(A,F('outlet'),V);renderGauges(D,K,M,V);renderMonths(A,now);renderPipes(D);renderHeat(V);
 }
 
 /* ---------- language ---------- */
@@ -442,7 +582,9 @@ function applyLang(){
 /* ---------- events ---------- */
 document.addEventListener('change',function(e){var s=e.target.getAttribute&&e.target.getAttribute('data-sel');if(s)setFilter(s,e.target.value);});
 document.addEventListener('click',function(e){
- var el=e.target.closest?e.target.closest('[data-f],[data-clear],[data-reset],[data-metric]'):null;if(!el)return;
+ var el=e.target.closest?e.target.closest('[data-f],[data-clear],[data-reset],[data-metric],[data-layer],[data-dismiss]'):null;if(!el)return;
+ if(el.hasAttribute('data-dismiss')){state.dismissed=state.warnText;render();return;}
+ if(el.hasAttribute('data-layer')){var lk=el.getAttribute('data-layer');LAYERS[lk]=!LAYERS[lk];render();return;}
  if(el.hasAttribute('data-reset')){resetFilters();return;}
  if(el.hasAttribute('data-clear')){setFilter(el.getAttribute('data-clear'),el.getAttribute('data-clear')==='period'?'all':'');return;}
  if(el.hasAttribute('data-metric')){state.metric=el.getAttribute('data-metric');render();return;}
@@ -457,9 +599,19 @@ document.getElementById('btnRefresh').addEventListener('click',function(){
 document.getElementById('btnTheme').addEventListener('click',function(){var r=document.documentElement,cur=r.getAttribute('data-theme');if(!cur)cur=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';var nx=cur==='dark'?'light':'dark';r.setAttribute('data-theme',nx);this.textContent=nx==='dark'?'Light':'Dark';});
 function setBadge(x){var mb=document.getElementById('modeBadge');mb.className='badge';mb.textContent=x;}
 
+/* ---------- brand ---------- */
+window.brandFallback=function(img){
+ var src=img.getAttribute('src')||'';
+ if(/\.svg$/i.test(src)){img.setAttribute('src','assets/geidea-logo.png');return;}
+ img.style.display='none';var wm=img.parentNode.querySelector('.wm');if(wm)wm.style.display='block';
+};
+
 /* ---------- boot ---------- */
 function boot(){
+ var im=document.getElementById('brandImg');
+ if(im){im.addEventListener('error',function(){window.brandFallback(im);});if(im.complete&&im.naturalWidth===0){window.brandFallback(im);}}
  var q=new URLSearchParams(location.search);
+ ['accent','accent2','navy'].forEach(function(k){var v=q.get(k);if(v&&/^#?[0-9a-fA-F]{3,8}$/.test(v)){document.documentElement.style.setProperty('--'+k,v.charAt(0)==='#'?v:'#'+v);}});
  var inFrame=window.self!==window.top;
  var theme=q.get('theme')||(inFrame?'light':'');
  if(theme==='light'||theme==='dark'){document.documentElement.setAttribute('data-theme',theme);}
